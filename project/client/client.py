@@ -119,7 +119,7 @@ class Client(fl.client.NumPyClient):
     def fit(
         self,
         parameters: NDArrays,
-        _config: dict,
+        config: dict,
     ) -> FitRes:
         """Fit the model using the provided parameters.
 
@@ -139,21 +139,21 @@ class Client(fl.client.NumPyClient):
         FitRes
             The parameters after training, the number of samples used and the metrics.
         """
-        config: ClientConfig = ClientConfig(**_config)
-        del _config
+        typed_config: ClientConfig = ClientConfig(**config)
+        del config
 
-        config.run_config["device"] = obtain_device()
-        config.run_config["cid"] = self.cid
+        typed_config.run_config["device"] = obtain_device()
+        typed_config.run_config["cid"] = self.cid
 
         self.net = self.set_parameters(
             parameters,
-            config.net_config,
+            typed_config.net_config,
         )
         trainloader = (
             self.dataloader_gen(
                 self.cid,
                 False,
-                config.dataloader_config,
+                typed_config.dataloader_config,
                 self.rng_tuple,
                 self.hydra_config,
             )
@@ -163,7 +163,7 @@ class Client(fl.client.NumPyClient):
         self.net, num_samples, metrics = self.train(
             self.net,
             trainloader,
-            config.run_config,
+            typed_config.run_config,
             self.working_dir,
             self.rng_tuple,
             self.hydra_config,
@@ -178,7 +178,7 @@ class Client(fl.client.NumPyClient):
     def evaluate(
         self,
         parameters: NDArrays,
-        _config: dict,
+        config: dict,
     ) -> EvalRes:
         """Evaluate the model using the provided parameters.
 
@@ -198,21 +198,21 @@ class Client(fl.client.NumPyClient):
         EvalRes
             The loss, the number of samples used and the metrics.
         """
-        config: ClientConfig = ClientConfig(**_config)
-        del _config
+        typed_config: ClientConfig = ClientConfig(**config)
+        del config
 
-        config.run_config["device"] = obtain_device()
-        config.run_config["cid"] = self.cid
+        typed_config.run_config["device"] = obtain_device()
+        typed_config.run_config["cid"] = self.cid
 
         self.net = self.set_parameters(
             parameters,
-            config.net_config,
+            typed_config.net_config,
         )
         testloader = (
             self.dataloader_gen(
                 self.cid,
                 True,
-                config.dataloader_config,
+                typed_config.dataloader_config,
                 self.rng_tuple,
                 self.hydra_config,
             )
@@ -222,7 +222,7 @@ class Client(fl.client.NumPyClient):
         loss, num_samples, metrics = self.test(
             self.net,
             testloader,
-            config.run_config,
+            typed_config.run_config,
             self.working_dir,
             self.rng_tuple,
             self.hydra_config,
